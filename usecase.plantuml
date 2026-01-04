@@ -2,67 +2,71 @@
 
 left to right direction
 
-title Диаграмма вариантов использования\nСистемы Депонирования Интеллектуальной Собственности
+title Диаграмма вариантов использования\nсистемы депонирования научно-исследовательских работ
 
-actor "Какой-то пользователь" as SomeUser
+actor "Исследователь" as Researcher
 actor "Создатель ИС" as Creator
 actor "Администратор системы" as OrgAdmin
-actor "Система организации" as ExternalServices
 
 rectangle "Система Депонирования" {
-    (Депонировать объект) as UC1
-    (Управлять метаданными) as UC2
-    (Просматривать депонированные объекты) as UC3
-    (Запросить подтверждение\nфакта депонирования) as UC4
-    (Администрировать систему) as UC7
 
+    (Депонировать объект ИС) as UC_DepositObject
+    (Просматривать депонированные \n объекты) as UC_ViewDepositedObjects
+    (Запросить подтверждение\nфакта депонирования) as UC_RequestDepositConfirmation
 
     together {
-        (Загрузить файлы) as UC8
-        (Заполнить метаданные) as UC10
+        (Загрузить файлы) as UC_UploadFiles
+        (Заполнить метаданные) as UC_FillMetadata
     }
 
-    UC1 ..> UC8 : includes
-    UC1 ..> UC10 : includes
+    UC_DepositObject ..> UC_UploadFiles : includes
+    UC_DepositObject ..> UC_FillMetadata : includes
+
+    (Управлять способами \n аутентификации и авторизации) as UC_ManageAuthMethods
+    (Управлять ролевой моделью) as UC_ManageRoles
+    (Контролировать работу системы) as UC_MonitorSystem
 
     together {
-        (Управлять пользователями) as UC11
-        (Настраивать ролевую модель) as UC12
-        (Мониторинг работы) as UC13
+        (Просматривать публичную статистику) as UC_ViewPublicStatistics
+        (Использовать фильтры поиска) as UC_UseSearchFilters
+        (Просматривать контент объекта) as UC_ViewObjectContent
     }
 
-    UC7 <.. UC11 : extends
-    UC7 <.. UC12 : extends
-    UC7 <.. UC13 : extends
+    UC_ViewDepositedObjects <.. UC_UseSearchFilters : extends
+    UC_ViewDepositedObjects <.. UC_ViewObjectContent : extends
+    UC_ViewDepositedObjects <.. UC_ViewPublicStatistics : extends
 
+    (Просматривать личную статистику) as UC_ViewPersonalStatistics
 
     together {
-        (Просмотр публичной статистики) as UC16
-        (Использовать фильтры) as UC14
-        (Просматривать контент работы) as UC15
+        (Просматривать системные метрики) as UC_ViewSystemMetrics
+        (Просматривать бизнес метрики) as UC_ViewBusinessMetrics
     }
-    UC3 <.. UC14 : extends
-    UC3 <.. UC15 : extends
-    UC3 <.. UC16 : extends
 
-    (Просмотр системной статистики) as UC18
+    UC_MonitorSystem <.. UC_ViewSystemMetrics : extends
+    UC_MonitorSystem <.. UC_ViewBusinessMetrics : extends
 
-    (Просматривать личную статистику) as UC17
-    (Управлять метаданными) as UC21
     together {
+        (Управлять схемами \n метаданных объектов) as UC_ManageMetadataSchemas
+        (Обновлять конфигурацию процесса) as UC_UpdateProcessConfiguration
+        (Интегрировать внешние сервисы) as UC_IntegrateExternalServices
     }
+    (Управлять конфигурацией процесса депонирования) as UC_ManageDepositionProcess
+    
+    UC_ManageDepositionProcess <.. UC_ManageMetadataSchemas : extends
+    UC_ManageDepositionProcess <.. UC_UpdateProcessConfiguration : extends
+    UC_ManageDepositionProcess <.. UC_IntegrateExternalServices : extends
 }
 
-SomeUser -- UC3
-SomeUser <|-- Creator
+Researcher -- UC_ViewDepositedObjects
 
-Creator -- UC1
-Creator -- UC4
-Creator -- UC17
-Creator -- UC21
+Creator -- UC_DepositObject
+Creator -- UC_RequestDepositConfirmation
+Creator -- UC_ViewPersonalStatistics
 
-OrgAdmin -- UC2
-OrgAdmin -- UC7
-OrgAdmin -- UC18
+OrgAdmin -- UC_ManageAuthMethods
+OrgAdmin -- UC_ManageRoles
+OrgAdmin -- UC_MonitorSystem
+OrgAdmin -- UC_ManageDepositionProcess
 
 @enduml
