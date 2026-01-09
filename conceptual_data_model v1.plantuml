@@ -1,0 +1,110 @@
+@startuml
+
+hide circle
+hide empty methods
+hide empty fields
+
+' skinparam groupInheritance 2
+
+entity DepositionObject {
+    status
+    deposited_at
+    depositor
+    localized_titles
+    localized_descriptions
+    scientific_area
+    access_level
+}
+
+entity File {
+    name
+    mime_type
+    content
+}
+
+entity Author {
+    full_name
+    organization
+}
+
+entity License {
+    code
+    titles
+    url
+}
+
+entity Tag {
+    name
+}
+
+entity Relation {
+    type
+}
+
+entity Dataset {
+    type
+    formats
+    records_count
+    size
+    collection_method
+    collection_period
+    update_frequency
+}
+
+entity Database {
+    type
+    dbms
+    tables
+    records
+    dump_format
+}
+
+entity Software {
+    type
+    programming_languages
+    platforms
+    repository_url
+    dependencies
+}
+
+entity Publication {
+    type
+    language
+    published_at
+    publisher
+    doi
+    references
+}
+
+entity ScientificWork {
+    type
+    keywords
+    language
+    published_at
+    references
+}
+
+entity Methodology {
+    type
+    input_requirements
+    output_results
+    limitations
+}
+
+DepositionObject ||--o{ File : contains
+
+DepositionObject }o--o{ Author : authored_by
+DepositionObject }o--|| License : licensed_under
+DepositionObject }o--o{ Tag : tagged_with
+
+DepositionObject ||--o{ Relation : source
+Relation }o--|| DepositionObject : target
+
+DepositionObject <|-- Dataset
+DepositionObject <|-- Database
+DepositionObject <|-- Software
+DepositionObject <|-- Publication
+DepositionObject <|-- ScientificWork
+DepositionObject <|-- Methodology
+
+@enduml
