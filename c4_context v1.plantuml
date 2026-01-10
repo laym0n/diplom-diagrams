@@ -1,0 +1,28 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title C4 Context Diagram — Система депонирования объектов ИС
+
+Person(user, "Пользователь", "Автор / исследователь")
+
+Person(admin, "Администратор системы")
+
+System_Ext(repository, "Сервис ИС", "Сервис, управляющий ИС (например, репозиторий ИС)")
+
+System(depositionSystem, "Система депонирования")
+
+System_Ext(businessService, "Внешний сервис бизнес-логики", "Конфигурируемое расширение, которое выполняет специализированную доменную обработку")
+
+System_Ext(auth, "Система аутентификации", "Внешний провайдер идентификации")
+
+System_Ext(monitoring, "Система мониторинга", "Сбор и визуализация технических и бизнес-метрик")
+
+Rel(user, depositionSystem, "Депонирует объекты, выполняет поиск и просмотр, запрашивает подтверждения депонирования, сверяет доказательства депонирования", "UI / API")
+Rel(admin, depositionSystem, "Настраивает видимость депонированных объектов", "UI / API")
+Rel(repository, depositionSystem, "Депонирует объекты, выполняет поиск и просмотр, запрашивает подтверждения депонирования, сверяет доказательства депонирования", "API")
+
+Rel(depositionSystem, businessService, "Запрашивает вычисления и проверки", "REST / gRPC")
+Rel(depositionSystem, auth, "Аутентификация и авторизация")
+Rel(depositionSystem, monitoring, "Экспорт метрик и логов", "Metrics / Logs API")
+
+@enduml

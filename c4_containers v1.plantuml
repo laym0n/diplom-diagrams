@@ -1,0 +1,56 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title C4 Container Diagram — Система депонирования объектов ИС
+
+Person(user, "Пользователь", "Автор / исследователь")
+Person(admin, "Администратор системы")
+
+System_Ext(repository, "Сервис ИС", "Внешний репозиторий ИС")
+System_Ext(businessService, "Внешний сервис бизнес-логики", "Специализированная доменная обработка")
+System_Ext(auth, "Система аутентификации", "SSO / OAuth / LDAP")
+System_Ext(monitoring, "Система мониторинга", "Сбор метрик и логов")
+
+System_Boundary(system, "Система депонирования") {
+
+    Container(webUI, "Web UI", "SPA", "Пользовательский и административный интерфейс")
+
+    Container(api, "API Gateway", "", "Точка входа для клиентов и внешних систем")
+
+    Container(core, "Core Application Service", "Java", "Бизнес-логика депонирования, версионирования, аудита и статистики")
+
+    Container(blockchain, "Blockchain Node", "", "Фиксация неизменяемых доказательств депонирования")
+
+    ContainerDb(storage, "Object Storage", "", "Хранение файлов депонированных объектов")
+
+    ContainerDb(metadataDb, "Configuration Database", "", "Метаданные, роли, конфигурация")
+
+    Container(search, "Search Engine", "", "Полнотекстовый поиск и индексация")
+
+    Container(agent, "Monitoring Agent", "Exporter", "Сбор метрик и логов")
+}
+
+Rel(user, webUI, "Депонирует объекты, выполняет поиск и просмотр, запрашивает подтверждения депонирования")
+Rel(user, api, "Депонирует объекты, выполняет поиск и просмотр, запрашивает подтверждения депонирования")
+Rel(user, blockchain, "Сверяет доказательства депонирования")
+
+Rel(admin, webUI, "Настраивает видимость депонированных объектов")
+Rel(admin, api, "Настраивает видимость депонированных объектов")
+
+Rel(webUI, api, "Вызывает API", "HTTPS/JSON")
+Rel(repository, api, "Интеграция", "REST")
+Rel(repository, blockchain, "Сверяет доказательства депонирования")
+Rel(api, core, "Маршрутизация запросов", "Internal API")
+
+Rel(core, storage, "Читает/записывает файлы")
+Rel(core, metadataDb, "Читает/записывает данные")
+Rel(core, search, "Индексирует и ищет")
+Rel(core, blockchain, "Записывает доказательства депонирования")
+Rel(core, businessService, "Запросы доменной логики", "REST/gRPC")
+
+Rel(api, auth, "Аутентификация")
+Rel(agent, monitoring, "Экспорт метрик", "Metrics API")
+
+Rel(core, agent, "Отправляет метрики и логи")
+
+@enduml
