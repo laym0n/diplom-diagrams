@@ -1,0 +1,39 @@
+@startuml
+left to right direction
+hide stereotypes
+skinparam shadowing false
+
+title DFD
+
+actor "Владелец ИС" as Producer
+
+rectangle "Backend Service" as Backend
+
+database "DFS / Object Storage\n(Off-chain)" as DFS
+database "Blockchain\n(On-chain)" as Blockchain
+
+database "Metadata DB" as Index
+
+Producer --> Backend : Файлы ИС\nDescriptive Metadata\nPREMIS Metadata
+
+Backend -up-> DFS : Файлы ИС
+Backend --> DFS : Descriptive Metadata
+Backend --> DFS : Object\nManifest + Metadata
+Backend --> DFS : Event
+Backend --> DFS : RightsStatement\nManifest + Metadata
+Backend --> DFS : Agent\nManifest + Metadata
+Backend --> DFS : MerkleProofs
+
+Backend --> Index : Object\nEvent\nRightsStatement\nAgent\nManifest + Metadata + Link
+
+
+Backend --> Blockchain : MerkleProofHash
+
+Blockchain --> Backend : merkleProofTxId\ntimestamp
+
+Backend --> Producer : merkleProofTxId\nObject IDs
+
+Producer --> Blockchain : merkleProofTxId
+Blockchain --> Producer : MerkleProofHash
+
+@enduml

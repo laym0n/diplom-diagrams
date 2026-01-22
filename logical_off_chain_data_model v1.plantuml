@@ -1,0 +1,203 @@
+@startuml
+hide methods
+hide empty fields
+hide circle
+skinparam linetype ortho
+
+title Logical Off-chain Data Model (DFS) — PREMIS-compatible
+
+entity Object {
+  id : String
+  category : ObjectCategory
+  originalName : String
+  characteristics : Characteristics[]
+  storage : Storage
+  identifiers : Identifier[]
+}
+
+entity Event {
+  id : String
+  type : EventType
+  dateTime : DateTime
+  outcome : EventOutcomeInformation[]
+  detail : EventDetailInformation[]
+  identifiers : Identifier[]
+}
+
+enum EventType {
+  ACCESSION
+  CREATION
+  DEACCESSION
+  DELETION
+  METADATA MODIFICATION
+  MIGRATION
+  ...
+}
+
+entity EventDetailInformation {
+  detail : String
+}
+
+entity EventOutcomeInformation {
+  outcome : EventOutcome
+  outcomeDetail : EventOutcomeInformationDetail
+}
+
+enum EventOutcome {
+  SUCCESS
+  FAILURE
+}
+
+entity EventOutcomeInformationDetail {
+  eventOutcomeDetailNote : String
+}
+
+entity EventRelations {
+  id : String
+  sourceEventId : String
+}
+
+entity Agent {
+  id : String
+  name : String
+  type : AgentType
+  identifiers : Identifier[]
+}
+
+entity ObjectRelations {
+  id : String
+  sourceObjectId : String
+  objectsRelations: ObjectsRelation[]
+}
+
+entity ObjectsRelation {
+  targetObjectId : String
+  relationType : ObjectRelationType
+  relationSubType : ObjectRelationSubType
+}
+
+enum ObjectRelationType {
+  DEPENDENCY
+  DERIVATION
+  LOGICAL
+  REFERENCE
+  REPLACEMENT
+  STRUCTURAL
+}
+
+enum ObjectRelationSubType {
+  HAS_PART
+  INCLUDES
+  IS_INCLUDED_IN
+  IS_PART_OF
+  IS_REPRESENTED_BY
+  REPRESENTS
+  ...
+}
+
+entity EventObjectRelation {
+  relatedObjectId : String
+  role : EventObjectRelationRole
+}
+
+enum EventObjectRelationRole {
+  OUTCOME
+  SOURCE
+}
+
+entity EventAgentRelation {
+  relatedAgentId : String
+  role : EventAgentRelationRole
+}
+
+enum EventAgentRelationRole {
+  AUTHORIZER
+  EXECUTING_PROGRAM
+  IMPLEMENTER
+  VALIDATOR
+}
+
+entity Identifier {
+  type : String
+  value : String
+}
+
+entity Characteristics {
+  size : Long
+  fixity : FixityBlock[]
+  format : FormatBlock[]
+}
+
+entity FixityBlock {
+  algorithm : String
+  digest : String
+}
+
+entity FormatBlock {
+  formatDesignation : FormatDesignation
+}
+
+entity FormatDesignation {
+  name : String
+  version : String
+}
+
+entity Storage {
+  contentLocation: ContentLocation
+}
+
+entity ContentLocation {
+  contentLocationType : String
+  contentLocationValue : String
+}
+
+entity DescriptiveMetadata {
+  id: String
+  payload : JSON
+}
+
+enum AgentType {
+  HARDWARE
+  ORGANIZATION
+  PERSON
+  SOFTWARE
+}
+
+Object ||--|{ ObjectRelations
+ObjectRelations ||--o{ ObjectsRelation
+ObjectsRelation }o--|| Object
+
+Event ||--|{ EventRelations
+Event ||--o{ EventDetailInformation
+Event ||--o{ EventOutcomeInformation
+EventOutcomeInformation ..> EventOutcome
+EventOutcomeInformation ||--o{ EventOutcomeInformationDetail
+EventRelations ||--o{ EventObjectRelation
+EventRelations ||--o{ EventAgentRelation
+EventObjectRelation }o--|| Object
+EventAgentRelation }o--|| Agent
+
+Object ||--o{ Identifier
+Event ||--o{ Identifier
+Agent ||--o{ Identifier
+
+Object ||--|| DescriptiveMetadata
+Object ||--|{ Characteristics
+Object ||--|{ Storage
+Storage ||--|| ContentLocation
+
+Agent ..> AgentType
+
+Characteristics ||--|{ FixityBlock
+Characteristics ||--|{ FormatBlock
+
+FormatBlock ||-|| FormatDesignation
+
+EventAgentRelation .> EventAgentRelationRole 
+EventObjectRelation .> EventObjectRelationRole
+Event .> EventType
+
+ObjectsRelation .> ObjectRelationType
+ObjectsRelation .> ObjectRelationSubType
+
+@enduml

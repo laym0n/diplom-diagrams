@@ -1,0 +1,376 @@
+@startuml
+hide methods
+hide empty fields
+hide circle
+skinparam linetype ortho
+
+title Logical Off-chain Data Model (DFS) — PREMIS-compatible
+
+package ObjectFrame <<Frame>> {
+  
+  entity ObjectManifest {
+    id : String
+    sourceObjectId : String
+    objectsLinks: ObjectsLink[]
+    objectEventLinks: ObjectEventLink[]
+    objectRightStatementLinks: ObjectRightStatementLink[]
+  }
+
+  entity ObjectMetadata {
+    id : String
+    version : Long
+    category : ObjectCategory
+    originalName : String
+    characteristics : Characteristics[]
+    storage : Storage
+    identifiers : Identifier[]
+  }
+
+  entity Characteristics {
+    size : Long
+    fixity : FixityBlock[]
+    format : FormatBlock[]
+  }
+
+  entity FixityBlock {
+    algorithm : String
+    digest : String
+  }
+
+  entity FormatBlock {
+    formatDesignation : FormatDesignation
+  }
+
+  entity FormatDesignation {
+    name : String
+    version : String
+  }
+
+  entity Storage {
+    contentLocation: ContentLocation
+  }
+
+  entity ContentLocation {
+    contentLocationType : String
+    contentLocationValue : String
+  }
+
+  entity ObjectsLink {
+    objectId : String
+    relationType : ObjectRelationType
+    relationSubType : ObjectRelationSubType
+  }
+
+  enum ObjectRelationType {
+    DEPENDENCY
+    DERIVATION
+    LOGICAL
+    REFERENCE
+    REPLACEMENT
+    STRUCTURAL
+  }
+
+  enum ObjectRelationSubType {
+    HAS_PART
+    INCLUDES
+    IS_INCLUDED_IN
+    IS_PART_OF
+    IS_REPRESENTED_BY
+    REPRESENTS
+    ...
+  }
+  
+  entity ObjectRightStatementLink {
+    rightStatement : String
+  }
+
+  entity ObjectEventLink {
+    eventId : String
+  }
+
+  entity DescriptiveMetadata {
+    id: String
+    payload : JSON
+  }
+}
+
+package EventFrame <<Frame>> {
+
+  entity Event {
+    id : String
+    type : EventType
+    dateTime : DateTime
+    outcome : EventOutcomeInformation[]
+    detail : EventDetailInformation[]
+    identifiers : Identifier[]
+    eventObjectRelations : EventObjectRelation[]
+  }
+
+  enum EventType {
+    ACCESSION
+    CREATION
+    DEACCESSION
+    DELETION
+    METADATA MODIFICATION
+    MIGRATION
+    ...
+  }
+
+  entity EventDetailInformation {
+    detail : String
+  }
+
+  entity EventOutcomeInformation {
+    outcome : EventOutcome
+    outcomeDetail : EventOutcomeInformationDetail
+  }
+
+  enum EventOutcome {
+    SUCCESS
+    FAILURE
+  }
+
+  entity EventOutcomeInformationDetail {
+    eventOutcomeDetailNote : String
+  }
+
+  entity EventAgentLink {
+    agentId : String
+    role : EventAgentLinkRole
+  }
+
+  enum EventAgentLinkRole {
+    AUTHORIZER
+    EXECUTING_PROGRAM
+    IMPLEMENTER
+    VALIDATOR
+  }
+
+  entity EventObjectRelation {
+    objectId : String
+    role : EventObjectRelationRole
+  }
+
+  enum EventObjectRelationRole {
+    OUTCOME
+    SOURCE
+  }
+}
+
+package AgentFrame <<Frame>> {
+  entity AgentManifest {
+    id : String
+    agentEventLinks: AgentEventLink[]
+    agentRightsStatementLinks: AgentRightsStatementLink[]
+  }
+
+  entity AgentEventLink {
+    eventId : String
+  }
+
+  entity AgentRightsStatementLink {
+    rightsStatementId : String
+  }
+
+  entity AgentMetadata {
+    id : String
+    version : Long
+    name : String
+    type : AgentType
+    identifiers : Identifier[]
+  }
+
+  enum AgentType {
+    HARDWARE
+    ORGANIZATION
+    PERSON
+    SOFTWARE
+  }
+}
+
+package "RightsStatementFrame" <<Frame>> {
+
+  entity RightsStatementManifest {
+    id : String
+    rightsStatementAgentLinks : RightsStatementAgentLink[]
+    rightsStatementObjectLinks : RightsStatementObjectLink[]
+  }
+
+  entity RightsStatementMetadata {
+    id : String
+    rightsBasis : RightsBasis
+    copyrightInformation : CopyrightInformation[]
+    licenseInformation : LicenseInformation[]
+    statuteInformation : StatuteInformation[]
+    otherRightsInformation : OtherRightsInformation[]
+    rightsGranted : RightsGranted[]
+    identifiers : Identifier[]
+  }
+
+  enum RightsBasis {
+    COPYRIGHT
+    LICENSE
+    STATUTE
+    OTHER
+  }
+
+  entity CopyrightInformation {
+    copyrightStatus : String
+    copyrightJurisdiction : String
+    copyrightStatusDeterminationDate : Date
+    copyrightNote : String[]
+    documentationIdentifiers : DocumentationIdentifier[]
+    applicableDates : ApplicableDates
+  }
+
+  entity LicenseInformation {
+    documentationIdentifiers : DocumentationIdentifier[]
+    licenseTerms : String
+    licenseNote : String[]
+    applicableDates : ApplicableDates
+  }
+
+  entity StatuteInformation {
+    statuteJurisdiction : String
+    statuteCitation : String
+    statuteInformationDeterminationDate : Date
+    statuteNote : String[]
+    documentationIdentifiers : DocumentationIdentifier[]
+    applicableDates : ApplicableDates
+  }
+
+  entity OtherRightsInformation {
+    documentationIdentifiers : DocumentationIdentifier[]
+    otherRightsBasis : String
+    applicableDates : ApplicableDates
+    otherRightsNote : String[]
+  }
+
+  entity RightsGranted {
+    act : String
+    restriction : String[]
+    termOfGrant : ApplicableDates
+    termOfRestriction : ApplicableDates
+    rightsGrantedNote : String[]
+  }
+
+  entity DocumentationIdentifier {
+    type : String
+    value : String
+    role : String
+  }
+
+  entity ApplicableDates {
+    startDate : Date
+    endDate : Date
+  }
+
+  entity RightsStatementAgentLink {
+    agentId : String
+    linkingAgentRole : String
+  }
+
+  entity RightsStatementObjectLink {
+    objectId : String
+    linkingObjectRole : String
+  }
+}
+
+entity Identifier {
+  type : String
+  value : String
+}
+
+ObjectManifest ||--|{ ObjectMetadata
+ObjectManifest ||--o{ ObjectsLink
+ObjectsLink }o--|| ObjectManifest
+ObjectManifest ||-o{ ObjectEventLink
+ObjectEventLink }o--|| Event
+ObjectManifest ||-o{ ObjectRightStatementLink
+ObjectRightStatementLink }o--|| RightsStatementManifest
+ObjectManifest ||--|| DescriptiveMetadata
+ObjectsLink ..> ObjectRelationType
+ObjectsLink ..> ObjectRelationSubType
+
+ObjectMetadata ||--o{ Identifier
+ObjectMetadata ||--|{ Characteristics
+ObjectMetadata ||--|{ Storage
+
+Characteristics ||--|{ FixityBlock
+Characteristics ||--|{ FormatBlock
+
+FormatBlock ||-|| FormatDesignation
+
+Storage ||--|| ContentLocation
+
+
+
+Event ||--o{ EventDetailInformation
+Event ||--o{ EventOutcomeInformation
+Event ||-o{ EventObjectRelation
+Event ||-o{ EventAgentLink
+Event ...> EventType
+Event ||--o{ Identifier
+
+EventOutcomeInformation ..> EventOutcome
+EventOutcomeInformation ||--o{ EventOutcomeInformationDetail
+
+EventObjectRelation }o-|| ObjectManifest
+EventObjectRelation ...> EventObjectRelationRole
+
+EventAgentLink ...> EventAgentLinkRole 
+EventAgentLink }o-|| AgentManifest
+
+
+
+AgentManifest ||--|{ AgentMetadata
+AgentManifest ||-o{ AgentEventLink
+AgentManifest ||-o{ AgentRightsStatementLink
+
+AgentMetadata ||--o{ Identifier
+AgentMetadata ..> AgentType
+
+AgentEventLink }o-|| Event
+AgentRightsStatementLink }o-|| RightsStatementManifest
+
+
+
+
+RightsStatementManifest ||--|| RightsStatementMetadata
+
+RightsStatementAgentLink }o--|| AgentManifest
+RightsStatementObjectLink }o--|| ObjectManifest
+
+RightsStatementManifest ||--o{ RightsStatementAgentLink
+RightsStatementManifest ||--o{ RightsStatementObjectLink
+
+RightsStatementManifest ||--|| RightsStatementMetadata
+
+RightsStatementMetadata ||--o{ Identifier
+
+RightsStatementMetadata ..> RightsBasis
+
+RightsStatementMetadata ||--o{ CopyrightInformation
+CopyrightInformation ||--o{ DocumentationIdentifier
+CopyrightInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||--o{ LicenseInformation
+LicenseInformation ||--o{ DocumentationIdentifier
+LicenseInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||--o{ StatuteInformation
+StatuteInformation ||--o{ DocumentationIdentifier
+StatuteInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||--o{ OtherRightsInformation
+OtherRightsInformation ||--o{ DocumentationIdentifier
+OtherRightsInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||--o{ RightsGranted
+RightsGranted ||--|| ApplicableDates : termOfGrant
+RightsGranted ||--|| ApplicableDates : termOfRestriction
+
+
+FixityBlock -[hidden]down> EventFrame
+
+@enduml

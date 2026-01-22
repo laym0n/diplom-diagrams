@@ -1,0 +1,70 @@
+@startuml
+title Sequence Diagram — Депонирование объекта и сохранение метаданных
+actor User
+participant WebUI
+participant "Backend (Core)" as Backend
+participant "Object Storage" as Storage
+participant "Blockchain Node" as Blockchain
+
+== Запрос 1: Депонирование объекта ==
+
+User -> WebUI : Отправить данные объекта и файлы
+activate WebUI
+
+WebUI -> Backend : POST /objects\n(файлы, базовые метаданные)
+activate Backend
+
+Backend -> Backend : Рассчитать предварительный hash файлов
+
+Backend -> Backend : Проверить существование объекта\n(по hash + метаданным)
+
+alt Объект уже существует
+    Backend --> WebUI : Ошибка: объект уже депонирован
+    WebUI --> User : Ошибка депонирования
+else Объект не найден
+    Backend -> Backend : Создать Object
+
+    Backend -> Storage : Upload files
+    activate Storage
+    Storage --> Backend : Storage locations
+    deactivate Storage
+
+    Backend -> Backend : Рассчитать Merkle hash файлов\n(content_hash)
+
+    Backend -> Blockchain : Write OnChainRecord\n(object_id, version=1,\ncontent_hash, timestamp)
+    activate Blockchain
+    Blockchain --> Backend : Tx receipt
+    deactivate Blockchain
+
+    Backend --> WebUI : Object created\nobject_id
+    deactivate Backend
+
+    WebUI --> User : Подтверждение успешного создания
+    deactivate WebUI
+
+
+    == Запрос 2: Сохранение описательных метаданных ==
+
+    User -> WebUI : Отправить описательные метаданные
+    activate WebUI
+
+    WebUI -> Backend : POST /objects/{object_id}/metadata
+    activate Backend
+
+    Backend -> Backend : Сохранить DublinCoreMetadata
+    Backend -> Backend : Создать Event\n(изменение метаданных)
+    Backend -> Backend : Рассчитать Merkle hash событий\n(events_hash)
+
+    Backend -> Blockchain : Write OnChainRecord\n(object_id, version=1,\nevents_hash, prev_hash)
+    activate Blockchain
+    Blockchain --> Backend : Tx receipt
+    deactivate Blockchain
+
+    Backend --> WebUI : Metadata saved\nstatus=SUCCESS
+    deactivate Backend
+
+    WebUI --> User : Подтверждение сохранения метаданных
+    deactivate WebUI
+end
+
+@enduml

@@ -1,0 +1,159 @@
+
+@startuml
+!define primary_key(x) <b>color:#b8861b<&key></color> x</b>
+!define foreign_key(x) color:#aaaaaa<&key></color> x
+!define column(x) color:#efefef<&media-record></color> x
+!define table(x) entity x
+
+' hide circle
+hide methods
+hide empty fields
+
+' skinparam linetype ortho
+
+enum ObjectCategory {
+  INTELLECTUAL_ENTITY
+  REPRESENTATION
+  FILE
+}
+
+entity ObjectRelation {
+  type
+  subType
+}
+
+enum ObjectRelationType {
+  DEPENDENCY
+  DERIVATION
+  LOGICAL
+  REFERENCE
+  REPLACEMENT
+  STRUCTURAL
+}
+
+enum ObjectRelationSubType {
+  HAS_PART
+  INCLUDES
+  IS_INCLUDED_IN
+  IS_PART_OF
+  IS_REPRESENTED_BY
+  REPRESENTS
+  ...
+}
+
+entity Identifier {
+  type
+  value
+}
+
+entity Object {
+  category
+  originalName
+}
+
+abstract class DescriptiveMetadata {
+
+}
+
+entity ObjectCharacteristics {
+  size
+}
+
+entity Fixity {
+  messageDigestAlgorithm
+  messageDigest
+  messageDigestOriginator
+}
+
+entity Format {
+  name
+  version
+  registryName
+  registryKey
+}
+
+entity Storage {
+  contentLocationType
+  contentLocationValue
+  storageMedium
+}
+
+entity Event {
+  type
+  dateTime
+}
+
+entity EventAgent {
+  agentRole
+}
+
+entity EventObject {
+  objectRole
+}
+
+enum EventType {
+  ACCESSION
+  CREATION
+  DEACCESSION
+  DELETION
+  METADATA MODIFICATION
+  MIGRATION
+  ...
+}
+
+abstract class EventDetailInformation {
+  detail
+}
+
+entity EventOutcomeInformation {
+  outcome
+  outcomeDetail
+}
+
+entity Agent {
+  name
+  type
+}
+
+enum AgentType {
+  HARDWARE
+  ORGANIZATION
+  PERSON
+  SOFTWARE
+}
+
+entity DublinCoreMetadata {
+}
+entity DataCiteMetadata {
+}
+
+Object ||--|{ ObjectCharacteristics
+Object ||--|{ Storage
+Object |o--|{ Identifier
+Object ||--o{ EventObject
+EventObject }o--|| Event
+Object ||-|| DescriptiveMetadata
+Object ..> ObjectCategory
+
+Agent ||--o{ EventAgent
+EventAgent }o--|| Event
+Agent |o--|{ Identifier
+Agent .> AgentType
+
+ObjectRelation }o--|| Object : source
+ObjectRelation }o--|| Object : target
+ObjectRelation .> ObjectRelationType
+ObjectRelation .> ObjectRelationSubType
+
+ObjectCharacteristics ||--|{ Fixity
+ObjectCharacteristics ||--|{ Format
+
+Event |o-|{ Identifier
+Event ||--o{ EventOutcomeInformation
+Event ||--|{ EventDetailInformation
+Event ..> EventType
+
+DescriptiveMetadata <|-- DublinCoreMetadata
+DescriptiveMetadata <|-- DataCiteMetadata
+
+@enduml

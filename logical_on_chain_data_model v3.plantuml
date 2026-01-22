@@ -1,0 +1,28 @@
+@startuml
+hide methods
+hide empty fields
+hide circle
+
+title On-chain Logical Data Model
+
+entity AnchorRecord {
+  id : String
+  merkleProofHash : Hash
+  snapshotId : String
+  timestamp : DateTime
+}
+
+entity SnapshotPointer {
+  id : String
+  offChainLocation : String
+}
+
+entity ArchiveIdentity {
+  id : String
+  publicKey : String
+}
+
+AnchorRecord ||--|| SnapshotPointer
+AnchorRecord }o--|| ArchiveIdentity
+
+@enduml

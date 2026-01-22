@@ -1,0 +1,466 @@
+@startuml
+hide methods
+hide empty fields
+hide circle
+
+skinparam linetype ortho
+
+title Logical Off-chain Data Model
+
+package ObjectFrame <<Frame>> {
+  
+  entity ObjectManifest {
+    id : String
+    sourceObjectId : String
+    objectsLinks: ObjectsLink[]
+    objectMetadataLinks: ObjectMetadataLink[]
+    objectEventLinks: ObjectEventLink[]
+    objectRightStatementLinks: ObjectRightStatementLink[]
+  }
+
+  struct ObjectMetadataLink $struct {
+    version : Long
+    objectMetadataId : String
+  }
+
+  entity ObjectMetadata {
+    id : String
+    category : ObjectCategory
+    originalName : String
+    characteristics : Characteristics[]
+    storage : Storage
+    identifiers : Identifier[]
+  }
+
+  struct Characteristics $struct {
+    size : Long
+    fixity : FixityBlock[]
+    format : FormatBlock[]
+  }
+
+  struct FixityBlock $struct {
+    algorithm : String
+    digest : String
+  }
+
+  struct FormatBlock $struct {
+    formatDesignation : FormatDesignation
+  }
+
+  struct FormatDesignation $struct {
+    name : String
+    version : String
+  }
+
+  struct Storage $struct {
+    contentLocation: ContentLocation
+  }
+
+  struct ContentLocation $struct {
+    contentLocationType : String
+    contentLocationValue : String
+  }
+
+  struct ObjectsLink $struct {
+    objectId : String
+    type : ObjectLinkType
+    subType : ObjectLinkSubType
+  }
+
+  enum ObjectLinkType $enum {
+    DEPENDENCY
+    DERIVATION
+    LOGICAL
+    REFERENCE
+    REPLACEMENT
+    STRUCTURAL
+  }
+
+  enum ObjectLinkSubType $enum {
+    HAS_PART
+    INCLUDES
+    IS_INCLUDED_IN
+    IS_PART_OF
+    IS_REPRESENTED_BY
+    REPRESENTS
+    ...
+  }
+  
+  struct ObjectRightStatementLink $struct {
+    rightStatementId : String
+  }
+
+  struct ObjectEventLink $struct {
+    eventId : String
+  }
+
+  entity DescriptiveMetadata {
+    id: String
+    payload : JSON
+  }
+
+  struct ObjectIdentifier $struct {
+    type : String
+    value : String
+  }
+}
+
+package EventFrame <<Frame>> {
+
+  entity Event {
+    id : String
+    type : EventType
+    dateTime : DateTime
+    outcome : EventOutcomeInformation[]
+    detail : EventDetailInformation[]
+    identifiers : Identifier[]
+    eventObjectLinks : EventObjectLink[]
+  }
+
+  enum EventType $enum {
+    ACCESSION
+    CREATION
+    DEACCESSION
+    DELETION
+    METADATA MODIFICATION
+    MIGRATION
+    ...
+  }
+
+  struct EventDetailInformation $struct {
+    detail : String
+  }
+
+  struct EventOutcomeInformation $struct {
+    outcome : EventOutcome
+    outcomeDetail : EventOutcomeInformationDetail
+  }
+
+  enum EventOutcome $enum {
+    SUCCESS
+    FAILURE
+  }
+
+  struct EventOutcomeInformationDetail $struct {
+    eventOutcomeDetailNote : String
+  }
+
+  struct EventAgentLink $struct {
+    agentId : String
+    role : EventAgentLinkRole
+  }
+
+  enum EventAgentLinkRole $enum {
+    AUTHORIZER
+    EXECUTING_PROGRAM
+    IMPLEMENTER
+    VALIDATOR
+  }
+
+  struct EventObjectLink $struct {
+    objectId : String
+    role : EventObjectLinkRole
+  }
+
+  enum EventObjectLinkRole $enum {
+    OUTCOME
+    SOURCE
+  }
+
+  struct EventIdentifier $struct {
+    type : String
+    value : String
+  }
+}
+
+package AgentFrame <<Frame>> {
+  entity AgentManifest {
+    id : String
+    agentEventLinks: AgentEventLink[]
+    agentMetadataLinks: AgentMetadataLink[]
+    agentRightsStatementLinks: AgentRightsStatementLink[]
+  }
+
+  struct AgentEventLink $struct {
+    eventId : String
+  }
+
+  struct AgentRightsStatementLink $struct {
+    rightsStatementId : String
+  }
+
+  struct AgentMetadataLink $struct {
+    version : Long
+    agentMetadataId : String
+  }
+
+  entity AgentMetadata {
+    id : String
+    name : String
+    type : AgentType
+    identifiers : Identifier[]
+  }
+
+  enum AgentType $enum {
+    HARDWARE
+    ORGANIZATION
+    PERSON
+    SOFTWARE
+  }
+
+  struct AgentIdentifier $struct {
+    type : String
+    value : String
+  }
+}
+
+package "RightsStatementFrame" <<Frame>> {
+
+  entity RightsStatementManifest {
+    id : String
+    rightsStatementAgentLinks : RightsStatementAgentLink[]
+    rightsStatementObjectLinks : RightsStatementObjectLink[]
+  }
+
+  struct RightsStatementMetadataLink $struct {
+    version : Long
+    rightsStatementMetadataId : String
+  }
+
+  entity RightsStatementMetadata {
+    id : String
+    rightsBasis : RightsBasis
+    copyrightInformation : CopyrightInformation[]
+    licenseInformation : LicenseInformation[]
+    statuteInformation : StatuteInformation[]
+    otherRightsInformation : OtherRightsInformation[]
+    rightsGranted : RightsGranted[]
+    identifiers : Identifier[]
+  }
+
+  enum RightsBasis $enum {
+    COPYRIGHT
+    LICENSE
+    STATUTE
+    OTHER
+  }
+
+  struct CopyrightInformation $struct {
+    copyrightStatus : String
+    copyrightJurisdiction : String
+    copyrightStatusDeterminationDate : Date
+    copyrightNote : String[]
+    documentationIdentifiers : DocumentationIdentifier[]
+    applicableDates : ApplicableDates
+  }
+
+  struct LicenseInformation $struct {
+    documentationIdentifiers : DocumentationIdentifier[]
+    licenseTerms : String
+    licenseNote : String[]
+    applicableDates : ApplicableDates
+  }
+
+  struct StatuteInformation $struct {
+    statuteJurisdiction : String
+    statuteCitation : String
+    statuteInformationDeterminationDate : Date
+    statuteNote : String[]
+    documentationIdentifiers : DocumentationIdentifier[]
+    applicableDates : ApplicableDates
+  }
+
+  struct OtherRightsInformation $struct {
+    documentationIdentifiers : DocumentationIdentifier[]
+    otherRightsBasis : String
+    applicableDates : ApplicableDates
+    otherRightsNote : String[]
+  }
+
+  struct RightsGranted $struct {
+    act : String
+    restriction : String[]
+    termOfGrant : ApplicableDates
+    termOfRestriction : ApplicableDates
+    rightsGrantedNote : String[]
+  }
+
+  struct DocumentationIdentifier $struct {
+    type : String
+    value : String
+    role : String
+  }
+
+  struct ApplicableDates $struct {
+    startDate : Date
+    endDate : Date
+  }
+
+  struct RightsStatementAgentLink $struct {
+    agentId : String
+    linkingAgentRole : String
+  }
+
+  struct RightsStatementObjectLink $struct {
+    objectId : String
+    linkingObjectRole : String
+  }
+  
+  struct RightsStatementIdentifier $struct {
+    type : String
+    value : String
+  }
+}
+
+package MerkleProofFrame <<Frame>> {
+
+  entity MerkleProof {
+    id : String
+    createdAt : DateTime
+    stateHash : String
+    blockchainTxId : String
+    objectLinks : MerkleProofObjectLink[]
+    objectRootHash : String
+    eventLinks : MerkleProofEventLink[]
+    eventRootHash : String
+    agentLinks : MerkleProofAgentLink[]
+    agentRootHash : String
+    rightsStatementLinks : MerkleProofRightsStatementLink[]
+    rightsRootHash : String
+    merkleProofsLinks : MerkleProofsLink[]
+    merkleProofsHash : String
+  }
+
+  struct MerkleProofObjectLink $struct $link {
+    objectManifestId : String
+  }
+
+  struct MerkleProofEventLink $struct $link {
+    eventId : String
+  }
+
+  struct MerkleProofAgentLink $struct $link {
+    agentManifestId : String
+  }
+
+  struct MerkleProofRightsStatementLink $struct $link {
+    rightsStatementManifestId : String
+  }
+
+  struct MerkleProofsLink $struct $link {
+    merkleProofId : String
+  }
+}
+
+
+
+MerkleProof ||--o{ MerkleProofObjectLink
+MerkleProof ||--o{ MerkleProofEventLink
+MerkleProof ||-lefto{ MerkleProofAgentLink
+MerkleProof ||-o{ MerkleProofRightsStatementLink
+MerkleProof ||--o{ MerkleProofsLink
+MerkleProof ||--o{ MerkleProofsLink
+
+MerkleProofObjectLink }|--|| ObjectManifest
+MerkleProofEventLink }|--|| Event
+MerkleProofAgentLink }|--|| AgentManifest
+MerkleProofRightsStatementLink }|--|| RightsStatementManifest
+
+
+
+
+
+ObjectManifest ||--|{ ObjectMetadataLink
+ObjectMetadataLink }|--|| ObjectMetadata
+ObjectManifest ||--o{ ObjectsLink
+ObjectManifest ||--o{ ObjectEventLink
+ObjectManifest ||-o{ ObjectRightStatementLink
+ObjectsLink ..> ObjectLinkType
+ObjectsLink ..> ObjectLinkSubType
+
+ObjectMetadata ||-lefto{ ObjectIdentifier
+ObjectMetadata ||--|{ Characteristics
+ObjectMetadata ||--|{ Storage
+
+Characteristics ||--|{ FixityBlock
+Characteristics ||-|{ FormatBlock
+
+FormatBlock ||--|| FormatDesignation
+
+Storage ||--|| ContentLocation
+
+
+
+Event ||--o{ EventDetailInformation
+Event ||-lefto{ EventOutcomeInformation
+Event ||--o{ EventObjectLink
+Event ||-o{ EventAgentLink
+Event ...> EventType
+Event ||--o{ EventIdentifier
+
+EventOutcomeInformation ..> EventOutcome
+EventOutcomeInformation ||--o{ EventOutcomeInformationDetail
+
+EventObjectLink ..> EventObjectLinkRole
+
+EventAgentLink ...> EventAgentLinkRole 
+
+
+
+AgentManifest ||--|{ AgentMetadataLink
+AgentMetadataLink ||--|{ AgentMetadata
+AgentManifest ||--o{ AgentEventLink
+AgentManifest ||--o{ AgentRightsStatementLink
+
+AgentMetadata ||-o{ AgentIdentifier
+AgentMetadata .left> AgentType
+
+
+
+
+RightsStatementManifest ||-lefto{ RightsStatementAgentLink
+RightsStatementManifest ||-o{ RightsStatementObjectLink
+
+RightsStatementManifest ||--|{ RightsStatementMetadataLink
+RightsStatementMetadataLink }|--|| RightsStatementMetadata
+
+RightsStatementMetadata ||--upo{ RightsStatementIdentifier
+
+RightsStatementMetadata ..up> RightsBasis
+
+RightsStatementMetadata ||-lefto{ CopyrightInformation
+CopyrightInformation ||--o{ DocumentationIdentifier
+CopyrightInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||--o{ LicenseInformation
+LicenseInformation ||--o{ DocumentationIdentifier
+LicenseInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||--o{ StatuteInformation
+StatuteInformation ||--o{ DocumentationIdentifier
+StatuteInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||-o{ OtherRightsInformation
+OtherRightsInformation ||--o{ DocumentationIdentifier
+OtherRightsInformation ||--|| ApplicableDates
+
+RightsStatementMetadata ||-o{ RightsGranted
+RightsGranted ||--|| ApplicableDates : termOfGrant
+RightsGranted ||--|| ApplicableDates : termOfRestriction
+
+
+
+' MerkleProofFrame -----[hidden]up- RightsStatementFrame
+' MerkleProofFrame -----[hidden]up- AgentFrame
+
+
+remove $struct
+remove $enum
+restore $link
+
+MerkleProofFrame -[hidden]up RightsStatementFrame
+MerkleProofFrame -[hidden]left AgentFrame
+MerkleProofFrame -[hidden]down- ObjectFrame
+MerkleProofFrame -[hidden]down- EventFrame
+
+@enduml

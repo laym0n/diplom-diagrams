@@ -1,0 +1,30 @@
+@startuml
+hide methods
+hide circle
+skinparam linetype ortho
+
+title On-chain Logical Data Model — Deposition Proof Record
+
+class OnChainRecord {
+  id : Hash
+  object_id : String
+  version : Integer
+  content_hash
+  events_hash
+  timestamp : UnixTimestamp
+  prev_version_hash : Hash
+  signer : PublicKey
+}
+
+OnChainRecord }o--|| OnChainRecord : "prev_version"
+
+class MerkleProof {
+  root_hash : Hash
+  algorithm : String
+  tree_type : String
+}
+
+OnChainRecord ||--|| MerkleProof : "content_hash"
+OnChainRecord ||--|| MerkleProof : "events_hash"
+
+@enduml

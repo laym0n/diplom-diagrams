@@ -1,0 +1,68 @@
+@startuml
+title Sequence Diagram — Поиск и просмотр депонированных объектов с точками расширения
+
+actor User
+participant webUI as "Web UI"
+participant backend as "Core Backend"
+participant search as "Search Engine"
+participant storage as "Object Storage"
+participant external as "External Service"
+
+== Поиск объектов ==
+
+User -> webUI : Ввести поисковый запрос и фильтры
+webUI -> backend : search(query, filters)
+
+activate backend
+
+' Расширенная обработка поискового запроса
+alt Обработка запроса настроена на внешний сервис
+    backend -> external : Нормализация / расширение запроса
+    external --> backend : Обогащённый запрос
+else Обработка запроса не настроена
+    backend -> backend : Дефолтная обработка запроса
+end
+
+backend -> search : Выполнить поиск
+search --> backend : Результаты поиска
+
+' Постобработка результатов
+alt Постобработка результатов настроена на внешний сервис
+    backend -> external : Ранжирование / фильтрация / агрегация
+    external --> backend : Обработанные результаты
+else Постобработка не настроена
+    backend -> backend : Дефолтная сортировка и фильтрация
+end
+
+backend -> webUI : Вернуть список объектов
+deactivate backend
+webUI --> User : Показать информацию
+
+== Просмотр выбранного объекта ==
+
+User -> webUI : Выбрать объект
+webUI -> backend : getObject(objectId)
+
+activate backend
+
+' Проверка доступа и видимости
+alt Проверка доступа настроена на внешний сервис
+    backend -> external : Проверить права доступа пользователя
+    external --> backend : Решение (разрешить / запретить)
+else Проверка доступа не настроена
+    backend -> backend : Дефолтная проверка по ролевой модели
+end
+
+alt Формирование ответа настроено на внешний сервис
+    backend -> external : Формирование ответа
+    external --> backend : Обогащённый ответ
+else Формирование ответа не настроено
+    backend -> backend : Дефолтное формирование ответа
+end
+    backend -> webUI : Вернуть детальную информацию
+
+deactivate backend
+
+webUI --> User : Показать информацию
+
+@enduml

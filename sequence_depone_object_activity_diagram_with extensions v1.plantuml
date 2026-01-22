@@ -1,0 +1,54 @@
+@startuml
+title Sequence Diagram — Депонирование объекта с конфигурируемыми шагами через внешний сервис
+
+actor User
+participant webUI as "Web UI"
+participant backend as "Core Backend"
+participant storage as "Object Storage"
+participant search as "Search Engine"
+participant blockchain as "Blockchain Node"
+participant external as "External Service"
+
+User -> webUI : Инициировать депонирование объекта
+webUI -> backend : Отправить данные объекта и файлов
+
+activate backend
+
+alt Валидация конфигурирована на внешний сервис
+    backend -> external : Проверка метаданных и файлов
+    external --> backend : Результат
+else Валидация конфигурирована в системе
+    backend -> backend : Проверка метаданных и файлов
+end
+
+alt Проверка существования объекта конфигурирована на внешний сервис
+    backend -> external : Проверить существование объекта
+    external --> backend : Результат
+else Проверка существования объекта конфигурирована в системе
+    backend -> backend : Проверка существования
+end
+
+alt Расчёт хеша конфигурирован на внешний сервис
+    backend -> external : Рассчитать хеш файлов
+    external --> backend : Результат
+else Расчёт хеша конфигурирован в системе
+    backend -> backend : Рассчитать хеш файлов
+end
+
+group Транзакция депонирования
+
+    backend -> storage : Сохранить файлы, Object, Event, Manifest
+    storage --> backend : OK
+
+    backend -> search : Индексировать объект
+    search --> backend : OK
+
+    backend -> blockchain : Записать доказательства депонирования
+    blockchain --> backend : TxHash / OK
+
+end
+
+backend -> webUI : Вернуть подтверждение успешного депонирования
+deactivate backend
+
+@enduml

@@ -1,0 +1,56 @@
+@startuml
+hide methods
+hide circle
+skinparam linetype ortho
+title On-chain Logical Data Model with Object Manifest
+
+' Основная запись в блокчейне
+class OnChainRecord {
+  id : Hash
+  object_id : String
+  version : Integer
+  content_root_hash : Hash      ' Merkle корень всех файлов
+  events_root_hash : Hash       ' Merkle корень всех событий
+  manifest_root_hash : Hash     ' Merkle корень манифеста
+  timestamp : UnixTimestamp
+  prev_version_hash : Hash
+  signer : PublicKey
+}
+
+OnChainRecord }o--|| OnChainRecord : "prev_version"
+
+' Манифест объекта, хранит ссылки на off-chain данные
+class ObjectManifest {
+  manifest_id : CID
+  object_cid : CID              ' Ссылка на объект (Object)
+  dublin_core_cid : CID         ' Ссылка на Dublin Core
+  event_manifest_cids : List<CID> ' Ссылки на EventManifest
+  agent_manifest_cids : List<CID> ' Ссылки на AgentManifest
+  file_manifest_cids : List<CID>  ' Ссылки на FileManifest
+  version : Integer
+  prev_manifest_cid : CID
+}
+
+OnChainRecord ||--|| ObjectManifest : "references"
+
+' Подманифесты для пакетной загрузки больших наборов данных
+class FileManifest {
+  manifest_id : CID
+  file_cids : List<CID>
+}
+
+class EventManifest {
+  manifest_id : CID
+  event_cids : List<CID>
+}
+
+class AgentManifest {
+  manifest_id : CID
+  agent_cids : List<CID>
+}
+
+ObjectManifest ||--o{ FileManifest : "files"
+ObjectManifest ||--o{ EventManifest : "events"
+ObjectManifest ||--o{ AgentManifest : "agents"
+
+@enduml

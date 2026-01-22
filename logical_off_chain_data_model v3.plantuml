@@ -1,0 +1,164 @@
+@startuml
+hide methods
+hide empty fields
+hide circle
+skinparam linetype ortho
+
+title Logical Off-chain Data Model (DFS) — PREMIS-compatible
+
+package ObjectFrame <<Frame>> {
+  
+  entity ObjectManifest {
+    id : String
+    sourceObjectId : String
+    objectsLinks: ObjectsLink[]
+    objectMetadataLinks : ObjectMetadataLink[]
+    descriptiveMetadataLink
+    objectEventLinks: ObjectEventLink[]
+    objectRightStatementLinks: ObjectRightStatementLink[]
+  }
+
+  entity ObjectsLink {
+    objectId : String
+    relationType : ObjectRelationType
+    relationSubType : ObjectRelationSubType
+  }
+
+  enum ObjectRelationType {
+    DEPENDENCY
+    DERIVATION
+    LOGICAL
+    REFERENCE
+    REPLACEMENT
+    STRUCTURAL
+  }
+
+  enum ObjectRelationSubType {
+    HAS_PART
+    INCLUDES
+    IS_INCLUDED_IN
+    IS_PART_OF
+    IS_REPRESENTED_BY
+    REPRESENTS
+    ...
+  }
+
+  entity ObjectMetadataLink {
+    cid : CID
+    version : Long
+  }
+  
+  entity ObjectRightStatementLink {
+    rightStatement : String
+  }
+
+  entity ObjectEventLink {
+    eventId : String
+  }
+}
+
+package EventFrame <<Frame>> {
+
+  entity Event {
+    id : String
+    eventObjectRelations : EventObjectRelation[]
+  }
+
+  entity EventAgentLink {
+    agentId : String
+    role : EventAgentLinkRole
+  }
+
+  enum EventAgentLinkRole {
+    AUTHORIZER
+    EXECUTING_PROGRAM
+    IMPLEMENTER
+    VALIDATOR
+  }
+
+  entity EventObjectRelation {
+    objectId : String
+    role : EventObjectRelationRole
+  }
+
+  enum EventObjectRelationRole {
+    OUTCOME
+    SOURCE
+  }
+}
+
+package AgentFrame <<Frame>> {
+  entity AgentManifest {
+    id : String
+    agentEventLinks: AgentEventLink[]
+    agentRightsStatementLinks: AgentRightsStatementLink[]
+  }
+
+  entity AgentEventLink {
+    eventId : String
+  }
+
+  entity AgentRightsStatementLink {
+    rightsStatementId : String
+  }
+}
+
+package "RightsStatementFrame" <<Frame>> {
+
+  entity RightsStatementManifest {
+    id : String
+    rightsStatementAgentLinks : RightsStatementAgentLink[]
+    rightsStatementObjectLinks : RightsStatementObjectLink[]
+  }
+
+  entity RightsStatementAgentLink {
+    agentId : String
+    linkingAgentRole : String
+  }
+
+  entity RightsStatementObjectLink {
+    objectId : String
+    linkingObjectRole : String
+  }
+}
+
+
+ObjectManifest ||--o{ ObjectsLink
+ObjectsLink }o--|| ObjectManifest
+ObjectManifest ||-o{ ObjectEventLink
+ObjectEventLink }o--|| Event
+ObjectManifest ||-o{ ObjectRightStatementLink
+ObjectRightStatementLink }o--|| RightsStatementManifest
+ObjectsLink ..> ObjectRelationType
+ObjectsLink ..> ObjectRelationSubType
+
+
+
+Event ||-o{ EventObjectRelation
+Event ||-o{ EventAgentLink
+
+EventObjectRelation }o-|| ObjectManifest
+EventObjectRelation ..> EventObjectRelationRole
+
+EventAgentLink ..> EventAgentLinkRole 
+EventAgentLink }o-|| AgentManifest
+
+
+
+AgentManifest ||--o{ AgentEventLink
+AgentManifest ||--o{ AgentRightsStatementLink
+
+AgentEventLink }o-----|| Event
+AgentRightsStatementLink }o-----|| RightsStatementManifest
+
+
+
+
+
+RightsStatementAgentLink }o--|| AgentManifest
+RightsStatementObjectLink }o--|| ObjectManifest
+
+RightsStatementManifest ||--o{ RightsStatementAgentLink
+RightsStatementManifest ||--o{ RightsStatementObjectLink
+
+@enduml
